@@ -61,3 +61,11 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create the name of the rolebinding to use
+*/}}
+{{- define "ocp-openjdk.roleBindingName" -}}
+{{- default (include "ocp-openjdk.fullname" .) .Values.roleBinding.name }}
+{{- default "default" .Values.roleBinding.name }}
+{{- end }}

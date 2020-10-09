@@ -1,0 +1,72 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: {{ include "ocp-openjdk.fullname" . }}
+    {{- include "ocp-openjdk.labels" . | nindent 4 }}
+  name: {{ include "ocp-openjdk.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    app: {{ include "ocp-openjdk.fullname" . }}
+    deploymentConfig: {{ include "ocp-openjdk.fullname" . }}
+    {{- include "ocp-openjdk.selectorLabels" . | nindent 4 }}
+  strategy:
+    type: {{ .Values.deployment.strategy }}
+  {{- with .Values.deployment.rollingParams }}
+    rollingParams:
+      {{- toYaml . | nindent 6 }}
+   {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "ocp-openjdk.fullname" . }}
+        deploymentConfig: {{ include "ocp-openjdk.fullname" . }}
+        {{- include "ocp-openjdk.selectorLabels" . | nindent 8 }}
+      name: {{ include "ocp-openjdk.fullname" . }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "ocp-openjdk.serviceAccountName" . }}
+      containers:
+        - name: {{ .Values.fullnameOverride }}
+          {{- with .Values.containerEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ .Values.fullnameOverride }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+{{- range $index, $port := .Values.extraPorts }}
+            - containerPort: {{ $port.port }}
+              name: {{ $port.name }}
+{{- end }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  triggers:
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - {{ include "ocp-openjdk.fullname" . }}
+      from:
+        kind: ImageStreamTag
+        name: "{{ .Values.fullnameOverride }}:{{ .Values.image.tag }}"
+    type: ImageChange
+  - type: ConfigChange
