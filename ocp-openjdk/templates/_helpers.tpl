@@ -35,6 +35,8 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "ocp-openjdk.labels" -}}
+partition: customerA
+partition: customerB
 helm.sh/chart: {{ include "ocp-openjdk.chart" . }}
 {{ include "ocp-openjdk.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
