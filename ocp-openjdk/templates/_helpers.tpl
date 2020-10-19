@@ -36,7 +36,7 @@ Common labels
 */}}
 {{- define "ocp-openjdk.labels" -}}
 partition: customerA
-partition: customerB
+release: canary
 helm.sh/chart: {{ include "ocp-openjdk.chart" . }}
 {{ include "ocp-openjdk.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
